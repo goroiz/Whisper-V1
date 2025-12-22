@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { insertPostSchema, insertCommentSchema, posts, comments } from './schema';
+import { insertPostSchema, insertCommentSchema, posts, comments } from './schema.js';
 
 export const errorSchemas = {
   validation: z.object({

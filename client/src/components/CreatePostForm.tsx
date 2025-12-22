@@ -6,7 +6,11 @@ import { useToast } from "@/hooks/use-toast";
 import { Send, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-export function CreatePostForm() {
+interface CreatePostFormProps {
+  onSuccess?: () => void;
+}
+
+export function CreatePostForm({ onSuccess }: CreatePostFormProps) {
   const [content, setContent] = useState("");
   const { mutate, isPending } = useCreatePost();
   const { toast } = useToast();
@@ -24,6 +28,7 @@ export function CreatePostForm() {
             title: "Post published",
             description: "Your thought has been shared with the world.",
           });
+          onSuccess?.();
         },
         onError: (error) => {
           toast({

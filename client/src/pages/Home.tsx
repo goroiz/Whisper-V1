@@ -1,12 +1,16 @@
+import { useState } from "react";
 import { usePosts } from "@/hooks/use-posts";
 import { CreatePostForm } from "@/components/CreatePostForm";
 import { PostCard } from "@/components/PostCard";
 import { Header } from "@/components/Header";
-import { Loader2, PenTool } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Loader2, PenTool, Plus } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function Home() {
   const { data: posts, isLoading, isError } = usePosts();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
@@ -31,8 +35,6 @@ export default function Home() {
             A simple, quiet place for your words.
           </motion.p>
         </div>
-
-        <CreatePostForm />
 
         <div className="space-y-6 mt-12">
           {isLoading ? (
@@ -59,6 +61,31 @@ export default function Home() {
           )}
         </div>
       </main>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Share your thoughts</DialogTitle>
+          </DialogHeader>
+          <CreatePostForm onSuccess={() => setIsDialogOpen(false)} />
+        </DialogContent>
+      </Dialog>
+
+      <motion.div
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        transition={{ delay: 0.3 }}
+        className="fixed bottom-8 right-8 z-40"
+      >
+        <Button
+          onClick={() => setIsDialogOpen(true)}
+          size="icon"
+          className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl"
+          data-testid="button-create-post"
+        >
+          <Plus className="h-6 w-6" />
+        </Button>
+      </motion.div>
     </div>
   );
 }

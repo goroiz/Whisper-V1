@@ -59,40 +59,39 @@ app.use((req, res, next) => {
   next();
 });
 
-(async () => {
-  await registerRoutes(httpServer, app);
+// --- GANTI DARI SINI KE BAWAH ---
 
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-    const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
+// 1. Register routes (Kita panggil langsung biar siap sebelum Vercel jalan)
+registerRoutes(httpServer, app);
 
-    res.status(status).json({ message });
-    throw err;
-  });
+// 2. Error handling middleware
+app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+  const status = err.status || err.statusCode || 500;
+  const message = err.message || "Internal Server Error";
+  res.status(status).json({ message });
+  throw err;
+});
 
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
-  if (process.env.NODE_ENV === "production") {
-    serveStatic(app);
-  } else {
-    const { setupVite } = await import("./vite");
+// 3. Setup Static Files (Khusus Production/Vercel)
+if (process.env.NODE_ENV === "production") {
+  serveStatic(app);
+} else {
+  // Setup Vite (Khusus Development di Replit)
+  // Kita bungkus async biar gak nge-block export utama
+  (async () => {
+    const { setupVite } = await import("./vite.js");
     await setupVite(httpServer, app);
-  }
+  })();
+}
 
-  // ALWAYS serve the app on the port specified in the environment variable PORT
-  // Other ports are firewalled. Default to 5000 if not specified.
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
+// 4. INI YANG DICARI VERCEL! (Export app)
+export default app;
+
+// 5. Jalankan server (Hanya kalau bukan di Vercel/Production)
+// Vercel akan otomatis handle listen sendiri lewat export di atas.
+if (process.env.NODE_ENV !== "production") {
   const port = parseInt(process.env.PORT || "5000", 10);
-  httpServer.listen(
-    {
-      port,
-      host: "0.0.0.0",
-      reusePort: true,
-    },
-    () => {
-      log(`serving on port ${port}`);
-    },
-  );
-})();
+  httpServer.listen({ port, host: "0.0.0.0", reusePort: true }, () => {
+    log(`serving on port ${port}`);
+  });
+}

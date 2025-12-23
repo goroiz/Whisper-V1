@@ -3,7 +3,7 @@ import { usePosts } from "@/hooks/use-posts";
 import { CreatePostForm } from "@/components/CreatePostForm";
 import { PostCard } from "@/components/PostCard";
 import { Header } from "@/components/Header";
-import { StarRating } from "@/components/StarRating";
+import { SiteRatingInput } from "@/components/SiteRatingInput";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Loader2, PenTool, Plus } from "lucide-react";
@@ -31,7 +31,7 @@ export default function Home() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
-            className="text-muted-foreground text-lg"
+            className="text-muted-foreground text-lg mb-6"
           >
             A simple, quiet place for your words.
           </motion.p>
@@ -40,7 +40,7 @@ export default function Home() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
           >
-            <StarRating averageRating={75} ratingCount={1234} data-testid="rating-display" />
+            <SiteRatingInput />
           </motion.div>
         </div>
 

@@ -5,10 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
-import { Loader2, ArrowLeft, Send } from "lucide-react";
+import { Loader2, ArrowLeft, Send, Heart } from "lucide-react";
 import { Link, useRoute } from "wouter";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 
 export default function PostDetail() {
   const [, params] = useRoute("/post/:id");
@@ -18,8 +20,33 @@ export default function PostDetail() {
   const { data: comments, isLoading: commentsLoading } = useComments(id);
   
   const [commentContent, setCommentContent] = useState("");
+  const [commentLikes, setCommentLikes] = useState<Record<number, boolean>>({});
   const createComment = useCreateComment();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const sessionId = localStorage.getItem("userSessionId") || `session-${Date.now()}-${Math.random()}`;
+    localStorage.setItem("userSessionId", sessionId);
+  }, []);
+
+  const { mutate: toggleCommentLike } = useMutation({
+    mutationFn: async (commentId: number) => {
+      const isLiked = commentLikes[commentId];
+      if (isLiked) {
+        await apiRequest("DELETE", `/api/comments/${commentId}/like`);
+      } else {
+        await apiRequest("POST", `/api/comments/${commentId}/like`, {});
+      }
+    },
+    onSuccess: (_, commentId) => {
+      setCommentLikes(prev => ({
+        ...prev,
+        [commentId]: !prev[commentId],
+      }));
+      queryClient.invalidateQueries({ queryKey: ["/api/posts", id, "comments"] });
+    },
+  });
 
   const handleCommentSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -169,6 +196,18 @@ export default function PostDetail() {
                   <p className="text-foreground/80 leading-relaxed text-sm">
                     {comment.content}
                   </p>
+                  <div className="pt-2">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => toggleCommentLike(comment.id)}
+                      className="gap-1 px-2 h-7"
+                      data-testid={`button-like-comment-${comment.id}`}
+                    >
+                      <Heart className={`w-3 h-3 ${commentLikes[comment.id] ? "fill-red-500 text-red-500" : ""}`} />
+                      <span className="text-xs">{comment.likesCount || 0}</span>
+                    </Button>
+                  </div>
                 </div>
               </motion.div>
             ))

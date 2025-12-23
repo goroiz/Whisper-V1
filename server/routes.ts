@@ -44,7 +44,6 @@ export async function registerRoutes(
 
   app.post(api.comments.create.path, async (req, res) => {
     try {
-      // The shared route input omits postId, but we need it for storage
       const input = api.comments.create.input.parse(req.body);
       const postId = Number(req.params.postId);
       
@@ -64,14 +63,27 @@ export async function registerRoutes(
     }
   });
 
-  app.post(api.ratings.create.path, async (req, res) => {
+  app.get(api.siteRating.get.path, async (req, res) => {
+    const rating = await storage.getSiteRating();
+    res.json(rating);
+  });
+
+  app.post(api.siteRating.create.path, async (req, res) => {
     try {
-      const postId = Number(req.params.postId);
-      const input = api.ratings.create.input.parse(req.body);
+      const input = api.siteRating.create.input.parse(req.body);
       
-      const rating = await storage.createRating({
+      // Get user session from localStorage (passed from client)
+      let userSession = req.headers['x-user-session'] as string;
+      if (!userSession) {
+        userSession = `session-${Date.now()}-${Math.random()}`;
+      }
+      
+      // Check if user already rated
+      const existingRating = await storage.getUserSiteRating(userSession);
+      
+      const rating = await storage.createSiteRating({
         ...input,
-        postId,
+        userSession,
       });
       res.status(201).json(rating);
     } catch (err) {
@@ -81,6 +93,72 @@ export async function registerRoutes(
           field: err.errors[0].path.join('.'),
         });
       }
+      throw err;
+    }
+  });
+
+  app.post(api.postLikes.create.path, async (req, res) => {
+    try {
+      const postId = Number(req.params.postId);
+      let userSession = req.headers['x-user-session'] as string;
+      if (!userSession) {
+        userSession = `session-${Date.now()}-${Math.random()}`;
+      }
+      
+      const like = await storage.likePost({
+        postId,
+        userSession,
+      });
+      res.status(201).json(like);
+    } catch (err) {
+      throw err;
+    }
+  });
+
+  app.delete(api.postLikes.delete.path, async (req, res) => {
+    try {
+      const postId = Number(req.params.postId);
+      let userSession = req.headers['x-user-session'] as string;
+      if (!userSession) {
+        return res.status(400).json({ message: 'User session required' });
+      }
+      
+      await storage.unlikePost(postId, userSession);
+      res.json({ success: true });
+    } catch (err) {
+      throw err;
+    }
+  });
+
+  app.post(api.commentLikes.create.path, async (req, res) => {
+    try {
+      const commentId = Number(req.params.commentId);
+      let userSession = req.headers['x-user-session'] as string;
+      if (!userSession) {
+        userSession = `session-${Date.now()}-${Math.random()}`;
+      }
+      
+      const like = await storage.likeComment({
+        commentId,
+        userSession,
+      });
+      res.status(201).json(like);
+    } catch (err) {
+      throw err;
+    }
+  });
+
+  app.delete(api.commentLikes.delete.path, async (req, res) => {
+    try {
+      const commentId = Number(req.params.commentId);
+      let userSession = req.headers['x-user-session'] as string;
+      if (!userSession) {
+        return res.status(400).json({ message: 'User session required' });
+      }
+      
+      await storage.unlikeComment(commentId, userSession);
+      res.json({ success: true });
+    } catch (err) {
       throw err;
     }
   });

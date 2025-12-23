@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { insertPostSchema, insertCommentSchema, insertRatingSchema, posts, comments, ratings } from './schema.js';
+import { insertPostSchema, insertCommentSchema, insertSiteRatingSchema, insertPostLikeSchema, insertCommentLikeSchema, posts, comments, siteRatings, postLikes, commentLikes } from './schema.js';
 
 export const errorSchemas = {
   validation: z.object({
@@ -60,18 +60,62 @@ export const api = {
       },
     },
   },
-  ratings: {
+  siteRating: {
+    get: {
+      method: 'GET' as const,
+      path: '/api/site-rating',
+      responses: {
+        200: z.object({
+          averageRating: z.number(),
+          ratingCount: z.number(),
+        }),
+      },
+    },
     create: {
       method: 'POST' as const,
-      path: '/api/posts/:postId/rating',
-      input: z.object({
-        rating: z.number().min(1).max(5),
-        userSession: z.string(),
-      }),
+      path: '/api/site-rating',
+      input: insertSiteRatingSchema.omit({ userSession: true }),
       responses: {
-        201: z.custom<typeof ratings.$inferSelect>(),
+        201: z.custom<typeof siteRatings.$inferSelect>(),
         400: errorSchemas.validation,
-        404: errorSchemas.notFound,
+      },
+    },
+  },
+  postLikes: {
+    create: {
+      method: 'POST' as const,
+      path: '/api/posts/:postId/like',
+      input: z.object({}),
+      responses: {
+        201: z.custom<typeof postLikes.$inferSelect>(),
+        400: errorSchemas.validation,
+      },
+    },
+    delete: {
+      method: 'DELETE' as const,
+      path: '/api/posts/:postId/like',
+      responses: {
+        200: z.object({ success: z.boolean() }),
+        400: errorSchemas.validation,
+      },
+    },
+  },
+  commentLikes: {
+    create: {
+      method: 'POST' as const,
+      path: '/api/comments/:commentId/like',
+      input: z.object({}),
+      responses: {
+        201: z.custom<typeof commentLikes.$inferSelect>(),
+        400: errorSchemas.validation,
+      },
+    },
+    delete: {
+      method: 'DELETE' as const,
+      path: '/api/comments/:commentId/like',
+      responses: {
+        200: z.object({ success: z.boolean() }),
+        400: errorSchemas.validation,
       },
     },
   },

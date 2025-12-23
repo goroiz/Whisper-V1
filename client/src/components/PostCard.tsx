@@ -1,11 +1,13 @@
 import { Link } from "wouter";
 import { formatDistanceToNow } from "date-fns";
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, Heart } from "lucide-react";
 import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { Post } from "@shared/schema";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { RatingInput } from "@/components/RatingInput";
-import { StarRating } from "@/components/StarRating";
+import { Button } from "@/components/ui/button";
+import { apiRequest } from "@/lib/queryClient";
 
 interface PostCardProps {
   post: Post;
@@ -13,6 +15,30 @@ interface PostCardProps {
 }
 
 export function PostCard({ post, index = 0 }: PostCardProps) {
+  const [userSessionId, setUserSessionId] = useState<string>("");
+  const [isLiked, setIsLiked] = useState(false);
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const sessionId = localStorage.getItem("userSessionId") || `session-${Date.now()}-${Math.random()}`;
+    localStorage.setItem("userSessionId", sessionId);
+    setUserSessionId(sessionId);
+  }, []);
+
+  const { mutate: toggleLike, isPending } = useMutation({
+    mutationFn: async () => {
+      if (isLiked) {
+        await apiRequest("DELETE", `/api/posts/${post.id}/like`);
+      } else {
+        await apiRequest("POST", `/api/posts/${post.id}/like`, {});
+      }
+    },
+    onSuccess: () => {
+      setIsLiked(!isLiked);
+      queryClient.invalidateQueries({ queryKey: ["/api/posts"] });
+    },
+  });
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -49,15 +75,20 @@ export function PostCard({ post, index = 0 }: PostCardProps) {
                 <div className="p-1.5 rounded-full group-hover:bg-primary/5 transition-colors">
                   <MessageCircle className="w-4 h-4" />
                 </div>
-                <span className="font-medium">View thread</span>
+                <span className="font-medium">Comments</span>
               </Link>
               
-              <div className="flex flex-col items-end gap-2">
-                {(post.ratingCount ?? 0) > 0 && (
-                  <StarRating averageRating={post.averageRating ?? 0} ratingCount={post.ratingCount ?? 0} />
-                )}
-                <RatingInput postId={post.id} />
-              </div>
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={() => toggleLike()}
+                disabled={isPending}
+                className="gap-1.5 px-2"
+                data-testid="button-like-post"
+              >
+                <Heart className={`w-4 h-4 ${isLiked ? "fill-red-500 text-red-500" : ""}`} />
+                <span className="text-xs font-medium">{post.likesCount || 0}</span>
+              </Button>
             </div>
           </div>
         </div>

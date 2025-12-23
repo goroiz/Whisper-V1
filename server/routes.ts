@@ -64,5 +64,26 @@ export async function registerRoutes(
     }
   });
 
+  app.post(api.ratings.create.path, async (req, res) => {
+    try {
+      const postId = Number(req.params.postId);
+      const input = api.ratings.create.input.parse(req.body);
+      
+      const rating = await storage.createRating({
+        ...input,
+        postId,
+      });
+      res.status(201).json(rating);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        return res.status(400).json({
+          message: err.errors[0].message,
+          field: err.errors[0].path.join('.'),
+        });
+      }
+      throw err;
+    }
+  });
+
   return httpServer;
 }

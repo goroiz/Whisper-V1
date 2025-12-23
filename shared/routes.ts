@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { insertPostSchema, insertCommentSchema, posts, comments } from './schema.js';
+import { insertPostSchema, insertCommentSchema, insertRatingSchema, posts, comments, ratings } from './schema.js';
 
 export const errorSchemas = {
   validation: z.object({
@@ -55,6 +55,21 @@ export const api = {
       input: insertCommentSchema.omit({ postId: true }),
       responses: {
         201: z.custom<typeof comments.$inferSelect>(),
+        400: errorSchemas.validation,
+        404: errorSchemas.notFound,
+      },
+    },
+  },
+  ratings: {
+    create: {
+      method: 'POST' as const,
+      path: '/api/posts/:postId/rating',
+      input: z.object({
+        rating: z.number().min(1).max(5),
+        userSession: z.string(),
+      }),
+      responses: {
+        201: z.custom<typeof ratings.$inferSelect>(),
         400: errorSchemas.validation,
         404: errorSchemas.notFound,
       },

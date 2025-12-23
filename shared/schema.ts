@@ -18,13 +18,29 @@ export const comments = pgTable("comments", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const ratings = pgTable("ratings", {
+  id: serial("id").primaryKey(),
+  postId: integer("post_id").notNull(),
+  rating: integer("rating").notNull(),
+  userSession: text("user_session").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const postsRelations = relations(posts, ({ many }) => ({
   comments: many(comments),
+  ratings: many(ratings),
 }));
 
 export const commentsRelations = relations(comments, ({ one }) => ({
   post: one(posts, {
     fields: [comments.postId],
+    references: [posts.id],
+  }),
+}));
+
+export const ratingsRelations = relations(ratings, ({ one }) => ({
+  post: one(posts, {
+    fields: [ratings.postId],
     references: [posts.id],
   }),
 }));
@@ -38,7 +54,15 @@ export const insertCommentSchema = createInsertSchema(comments).pick({
   postId: true,
 });
 
+export const insertRatingSchema = createInsertSchema(ratings).pick({
+  rating: true,
+  postId: true,
+  userSession: true,
+});
+
 export type Post = typeof posts.$inferSelect;
 export type InsertPost = z.infer<typeof insertPostSchema>;
 export type Comment = typeof comments.$inferSelect;
 export type InsertComment = z.infer<typeof insertCommentSchema>;
+export type Rating = typeof ratings.$inferSelect;
+export type InsertRating = z.infer<typeof insertRatingSchema>;

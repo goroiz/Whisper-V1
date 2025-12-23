@@ -1,6 +1,6 @@
 import { db } from "./db.js";
-import { posts, comments, type Post, type InsertPost, type Comment, type InsertComment } from "../shared/schema.js";
-import { eq, desc } from "drizzle-orm";
+import { posts, comments, ratings, type Post, type InsertPost, type Comment, type InsertComment, type Rating, type InsertRating } from "../shared/schema.js";
+import { eq, desc, avg } from "drizzle-orm";
 
 export interface IStorage {
   getPosts(): Promise<Post[]>;
@@ -8,6 +8,8 @@ export interface IStorage {
   createPost(post: InsertPost): Promise<Post>;
   getComments(postId: number): Promise<Comment[]>;
   createComment(comment: InsertComment): Promise<Comment>;
+  createRating(rating: InsertRating): Promise<Rating>;
+  getUserRating(postId: number, userSession: string): Promise<Rating | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -32,6 +34,30 @@ export class DatabaseStorage implements IStorage {
   async createComment(insertComment: InsertComment): Promise<Comment> {
     const [comment] = await db.insert(comments).values(insertComment).returning();
     return comment;
+  }
+
+  async createRating(insertRating: InsertRating): Promise<Rating> {
+    const [rating] = await db.insert(ratings).values(insertRating).returning();
+    
+    // Update post average rating and count
+    const postRatings = await db.select().from(ratings).where(eq(ratings.postId, insertRating.postId));
+    const totalRating = postRatings.reduce((sum, r) => sum + r.rating, 0);
+    const avgRating = Math.round((totalRating / postRatings.length) * 20); // Convert to 0-100 scale
+    
+    await db.update(posts)
+      .set({
+        averageRating: avgRating,
+        ratingCount: postRatings.length,
+      })
+      .where(eq(posts.id, insertRating.postId));
+    
+    return rating;
+  }
+
+  async getUserRating(postId: number, userSession: string): Promise<Rating | undefined> {
+    const [rating] = await db.select().from(ratings)
+      .where(eq(ratings.postId, postId) && eq(ratings.userSession, userSession));
+    return rating;
   }
 }
 

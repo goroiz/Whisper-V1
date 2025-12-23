@@ -70,6 +70,16 @@ export function PostCard({ post, index = 0 }: PostCardProps) {
                 {post.content}
               </p>
 
+              {post.gifUrl && (
+                <motion.img
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  src={post.gifUrl}
+                  alt="Post GIF"
+                  className="w-full rounded-2xl object-cover max-h-[300px]"
+                />
+              )}
+
               <div className="flex items-center justify-between pt-3 border-t border-border/20">
                 <motion.button
                   whileHover={{ scale: 1.05 }}

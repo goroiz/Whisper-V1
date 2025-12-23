@@ -6,6 +6,7 @@ import { relations } from "drizzle-orm";
 export const posts = pgTable("posts", {
   id: serial("id").primaryKey(),
   content: text("content").notNull(),
+  gifUrl: text("gif_url"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   likesCount: integer("likes_count").default(0),
 });
@@ -68,6 +69,7 @@ export const commentLikesRelations = relations(commentLikes, ({ one }) => ({
 
 export const insertPostSchema = createInsertSchema(posts).pick({
   content: true,
+  gifUrl: true,
 });
 
 export const insertCommentSchema = createInsertSchema(comments).pick({

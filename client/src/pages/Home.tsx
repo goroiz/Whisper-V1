@@ -71,11 +71,21 @@ export default function Home() {
       </main>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Share your thoughts</DialogTitle>
-          </DialogHeader>
-          <CreatePostForm onSuccess={() => setIsDialogOpen(false)} />
+        <DialogContent className="max-w-4xl w-full h-[90vh] max-h-[90vh] p-0 overflow-hidden">
+          <div className="flex h-full flex-col bg-white dark:bg-background rounded-3xl">
+            <div className="flex items-center justify-between border-b border-border/30 p-6">
+              <h2 className="text-2xl font-bold text-foreground">Share your thoughts</h2>
+              <button
+                onClick={() => setIsDialogOpen(false)}
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
+                ×
+              </button>
+            </div>
+            <div className="flex-1 overflow-auto p-6">
+              <CreatePostForm onSuccess={() => setIsDialogOpen(false)} />
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
 

@@ -3,6 +3,7 @@ import { usePosts } from "@/hooks/use-posts";
 import { CreatePostForm } from "@/components/CreatePostForm";
 import { PostCard } from "@/components/PostCard";
 import { Header } from "@/components/Header";
+import { StarRating } from "@/components/StarRating";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Loader2, PenTool, Plus } from "lucide-react";
@@ -34,6 +35,13 @@ export default function Home() {
           >
             A simple, quiet place for your words.
           </motion.p>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+          >
+            <StarRating averageRating={75} ratingCount={1234} data-testid="rating-display" />
+          </motion.div>
         </div>
 
         <div className="space-y-6 mt-12">

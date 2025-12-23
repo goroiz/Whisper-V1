@@ -7,6 +7,8 @@ export const posts = pgTable("posts", {
   id: serial("id").primaryKey(),
   content: text("content").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  averageRating: integer("average_rating").default(0),
+  ratingCount: integer("rating_count").default(0),
 });
 
 export const comments = pgTable("comments", {

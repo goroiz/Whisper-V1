@@ -51,7 +51,7 @@ export function CreatePostForm({ onSuccess }: CreatePostFormProps) {
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="bg-card/50 backdrop-blur-sm border border-border/40 rounded-3xl p-6 shadow-sm mb-8"
+      className="bg-card border border-border/40 rounded-3xl p-8 shadow-lg mb-8"
     >
       <form onSubmit={handleSubmit} className="relative">
         <AnimatePresence mode="wait">
@@ -62,16 +62,22 @@ export function CreatePostForm({ onSuccess }: CreatePostFormProps) {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.8 }}
               transition={{ duration: 0.3 }}
-              className="flex flex-col items-center justify-center py-12 gap-3"
+              className="flex flex-col items-center justify-center py-16 gap-4"
             >
               <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 0.5 }}
-                className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center"
+                animate={{ rotate: 360, scale: [1, 1.1, 1] }}
+                transition={{ duration: 0.6, repeatDelay: 0.5 }}
+                className="w-14 h-14 rounded-full bg-gradient-to-br from-green-400/20 to-green-500/20 flex items-center justify-center"
               >
-                <Check className="w-6 h-6 text-green-500" />
+                <Check className="w-7 h-7 text-green-500 font-bold" />
               </motion.div>
-              <p className="text-sm font-medium text-foreground">Post published!</p>
+              <motion.p 
+                animate={{ opacity: [0.8, 1, 0.8] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+                className="text-base font-semibold text-foreground"
+              >
+                Post published!
+              </motion.p>
             </motion.div>
           ) : (
             <motion.div
@@ -84,32 +90,41 @@ export function CreatePostForm({ onSuccess }: CreatePostFormProps) {
                 placeholder="What's on your mind?"
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                className="min-h-[120px] resize-none border-none bg-transparent text-lg placeholder:text-muted-foreground/60 focus-visible:ring-0 p-0"
+                className="min-h-[140px] resize-none border-0 bg-transparent text-lg placeholder:text-muted-foreground/50 focus-visible:ring-0 p-0 focus-visible:outline-none"
                 maxLength={280}
                 data-testid="textarea-post-content"
               />
               
-              <div className="flex items-center justify-between mt-4 pt-4 border-t border-border/30">
-                <div className="text-xs font-medium text-muted-foreground">
-                  <span className={content.length > 250 ? "text-orange-500" : ""}>
+              <div className="flex items-center justify-between mt-6 pt-6 border-t border-border/30">
+                <motion.div 
+                  animate={{ scale: content.length > 250 ? 1.05 : 1 }}
+                  transition={{ type: "spring", stiffness: 200 }}
+                  className="text-xs font-semibold text-muted-foreground"
+                >
+                  <span className={content.length > 250 ? "text-orange-500 font-bold" : ""}>
                     {content.length}
                   </span>
-                  <span className="opacity-50"> / 280</span>
-                </div>
+                  <span className="opacity-40"> / 280</span>
+                </motion.div>
                 
-                <Button 
-                  type="submit" 
-                  disabled={!content.trim() || isPending}
-                  className="rounded-full px-6"
-                  data-testid="button-submit-post"
+                <motion.div
+                  whileHover={{ scale: !content.trim() || isPending ? 1 : 1.05 }}
+                  whileTap={{ scale: !content.trim() || isPending ? 1 : 0.95 }}
                 >
-                  {isPending ? (
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  ) : (
-                    <Send className="h-4 w-4 mr-2" />
-                  )}
-                  Post
-                </Button>
+                  <Button 
+                    type="submit" 
+                    disabled={!content.trim() || isPending}
+                    className="rounded-full px-8 font-semibold bg-primary hover:bg-primary/90"
+                    data-testid="button-submit-post"
+                  >
+                    {isPending ? (
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    ) : (
+                      <Send className="h-4 w-4 mr-2" />
+                    )}
+                    Post
+                  </Button>
+                </motion.div>
               </div>
             </motion.div>
           )}

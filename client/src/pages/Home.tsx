@@ -80,19 +80,30 @@ export default function Home() {
       </Dialog>
 
       <motion.div
-        initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
-        transition={{ delay: 0.3 }}
+        initial={{ scale: 0, rotate: -180 }}
+        animate={{ scale: 1, rotate: 0 }}
+        transition={{ delay: 0.3, type: "spring", stiffness: 100, damping: 15 }}
         className="fixed bottom-8 right-8 z-40"
       >
-        <Button
-          onClick={() => setIsDialogOpen(true)}
-          size="icon"
-          className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl"
-          data-testid="button-create-post"
+        <motion.div
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
+          transition={{ type: "spring", stiffness: 400, damping: 10 }}
         >
-          <Plus className="h-6 w-6" />
-        </Button>
+          <Button
+            onClick={() => setIsDialogOpen(true)}
+            size="icon"
+            className="h-16 w-16 rounded-full shadow-lg hover:shadow-2xl bg-primary hover:bg-primary/90 transition-all duration-300"
+            data-testid="button-create-post"
+          >
+            <motion.div
+              animate={{ rotate: [0, 10, -10, 0] }}
+              transition={{ duration: 0.6, repeat: Infinity, repeatDelay: 3 }}
+            >
+              <Plus className="h-7 w-7" />
+            </motion.div>
+          </Button>
+        </motion.div>
       </motion.div>
     </div>
   );
